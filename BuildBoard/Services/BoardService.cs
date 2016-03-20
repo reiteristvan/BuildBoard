@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
+using BuildBoard.Hubs;
+using Microsoft.AspNet.SignalR;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
@@ -12,6 +14,7 @@ namespace BuildBoard.Services
     {
         IEnumerable<Location> GetLocations();
         Task AddMessage(int locationId, string text);
+        IEnumerable<MessageTableEntity> GetMessages(int locationId, int top);
     }
 
     public sealed class BoardService : IBoardService
@@ -50,6 +53,18 @@ namespace BuildBoard.Services
             };
 
             await _messagesTable.ExecuteAsync(TableOperation.Insert(tableEntity));
+
+            IHubContext hubContext = GlobalHost.ConnectionManager.GetHubContext<MessageBroadcastHub>();
+            hubContext.Clients.Groups(new List<string> { locationId.ToString() }).broadcastMessage(text);
+        }
+
+        public IEnumerable<MessageTableEntity> GetMessages(int locationId, int top)
+        {
+            TableQuery<MessageTableEntity> query = new TableQuery<MessageTableEntity>()
+                .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, locationId.ToString()));
+            IEnumerable<MessageTableEntity> result = _messagesTable.ExecuteQuery(query).OrderByDescending(m => m.Date).Take(top);
+
+            return result;
         }
     }
 }

@@ -1,13 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
 
 namespace BuildBoard.Models
 {
     public sealed class MessageModel
     {
-        [Required]
-        public int LocationId { get; set; }
-
-        [Required]
-        public string Text { get; set; }
+        public string Message { get; set; }
+        public DateTimeOffset Date { get; set; }
     }
 }

@@ -10,10 +10,5 @@ namespace BuildBoard.Hubs
         {
             return Groups.Add(Context.ConnectionId, locationId.ToString());
         }
-
-        public void Broadcast(string message, DateTimeOffset date)
-        {
-            Clients.All.broadcastMessage(message);
-        }
     }
 }

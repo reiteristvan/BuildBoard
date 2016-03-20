@@ -5,6 +5,11 @@ namespace BuildBoard.Services
 {
     public class MessageTableEntity : TableEntity
     {
+        public MessageTableEntity()
+        {
+            
+        }
+
         public MessageTableEntity(string partitionKey)
         {
             PartitionKey = partitionKey;

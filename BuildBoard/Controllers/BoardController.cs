@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
-using BuildBoard.Hubs;
 using BuildBoard.Models;
 using BuildBoard.Services;
-using Microsoft.AspNet.SignalR;
 
 namespace BuildBoard.Controllers
 {
@@ -27,7 +26,7 @@ namespace BuildBoard.Controllers
 
         [Route("post")]
         [HttpPost]
-        public async Task PostMessage(MessageModel model)
+        public async Task PostMessage(NewMessageModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -35,9 +34,18 @@ namespace BuildBoard.Controllers
             }
 
             await _boardService.AddMessage(model.LocationId, model.Text);
+        }
 
-            IHubContext hubContext = GlobalHost.ConnectionManager.GetHubContext<MessageBroadcastHub>();
-            hubContext.Clients.Groups(new List<string> { model.LocationId.ToString() }).broadcastMessage(model.Text);
+        [HttpGet]
+        [Route("list/{locationId}/{top}")]
+        public IEnumerable<MessageModel> GetMessages(int locationId, int top)
+        {
+            var result = _boardService.GetMessages(locationId, top);
+            return result.Select(m => new MessageModel
+            {
+                Date = m.Date,
+                Message = m.Text
+            });
         }
 
         [Route("test")]
